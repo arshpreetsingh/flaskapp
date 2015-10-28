@@ -1,0 +1,4 @@
+from app import graph1
+a,b = graph1()
+print a
+print b

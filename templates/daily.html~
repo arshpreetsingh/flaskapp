@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<svg width="1000" height="400"  >
+
+{{chart|safe}}
+
+
+</svg>
+
+
+{% endblock %}

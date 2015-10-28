@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<button onclick="goBack()">Go Back</button>
+
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
+{{week_chart|safe}}
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1> Welcome to Email Analysis </h1>
+    
+    <h2> Please Follow the instructions for Email analysis</h2>
+    
+    <h3>Click here to start analysis >> <a href = "/login">Start Analysis<h3>
+    
+    <hr>
+    
+{% endblock %}
