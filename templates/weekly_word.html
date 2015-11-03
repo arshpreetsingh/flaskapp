@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<script>
+
+function goBack() {
+
+   window.history.back();
+
+}
+
+</script>
+
+<center>
+
+<button onclick = "goBack()"> Go Back </button>
+
+<svg width = "1000" height = "400">
+
+{{word_chart|safe}}
+</svg>
+
+</center>
+{% endblock %}

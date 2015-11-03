@@ -10,7 +10,7 @@ from action import *
 from flask import request
 from os import error
 
-
+from collections import Counter
 
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_oauthlib.client import OAuth
@@ -82,8 +82,8 @@ def get_pw(username):
 
 
 
-ACCESS_TOKEN = 0
-EMAIL = 0
+#ACCESS_TOKEN = 0
+#EMAIL = 0
 
 @app.route('/')
 
@@ -168,7 +168,128 @@ def week_graph_data():
     week_chart = bar_chart.render(is_unicode = True)
     return render_template('weekly.html',week_chart = week_chart)
 
+@app.route('/weekly-pieAnalysis')
 
+def week_pie_data_graph():
+
+    a = weekly_inbox_data_piechart()
+    b = weekly_outbox_data_piechart()
+    c = weekly_important_data_piechart()
+    d = weekly_archieved_data_piechart()
+    e = weekly_trashed_data_piechart()
+
+
+    pie_chart = pygal.Pie()
+    pie_chart.title = 'Different Parts of your Gmail'
+    pie_chart.add('Inbox', a)
+    pie_chart.add('Sent', b)
+    pie_chart.add('Important',c )
+    pie_chart.add('Archived', d)
+    pie_chart.add('Trashed',e)
+    week_chart = pie_chart.render(is_unicode = True)
+    return render_template('weekly_pie.html',week_chart = week_chart)
+
+
+
+
+
+@app.route('/daily-pieAnalysis')
+
+def daily_pie_data_graph():
+
+    a = daily_inbox_data_piechart()
+    b = daily_outbox_data_piechart()
+    c = daily_important_data_piechart()
+    d = daily_archieved_data_piechart()
+    e = daily_trashed_data_piechart()
+
+
+    pie_chart = pygal.Pie()
+    pie_chart.title = 'Different Parts of your Gmail'
+    pie_chart.add('Inbox', a)
+    pie_chart.add('Sent', b)
+    pie_chart.add('Important',c )
+    pie_chart.add('Archived', d)
+    pie_chart.add('Trashed',e)
+    chart = pie_chart.render(is_unicode = True)
+    return render_template('daily_pie.html',chart = chart)
+
+@app.route('/daily-wordcount')
+
+def word_count_daily_data():
+	 
+    a,b,c,d,e = word_count_daily_inbox()
+    
+    a1,b1,c1,d1,e1 = word_count_daily_outbox()
+    
+    bar_chart = pygal.Bar()
+    bar_chart.title = 'Word Count Analysis'
+    bar_chart.x_labels = ('Words < 10','Words < 30','Words < 50','Words < 100','More than 100s')
+    bar_chart.add('Received', [a,b,c,d,e])
+    bar_chart.add('Sent',[a1,b1,c1,d1,e1])
+    
+    word_chart = bar_chart.render(is_unicode = True)
+    
+    return render_template('daily_word.html',word_chart = word_chart)
+
+   
+
+@app.route('/weekly-wordcount')
+
+def word_count_weekly_data():
+	 
+    a,b,c,d,e = word_count_weekly_inbox()
+    
+    a1,b1,c1,d1,e1 = word_count_weekly_outbox()
+    
+    bar_chart = pygal.Bar()
+    bar_chart.title = 'Word Count Analysis'
+    bar_chart.x_labels = ('Words < 10','Words < 30','Words < 50','Words < 100','More than 100s')
+    bar_chart.add('Received', [a,b,c,d,e])
+    bar_chart.add('Sent',[a1,b1,c1,d1,e1])
+    
+    word_chart = bar_chart.render(is_unicode = True)
+    
+    return render_template('weekly_word.html',word_chart = word_chart)
+
+@app.route('/month_inbox')
+
+def month_inbox():
+    activity_inbox  = monthly_activity_inbox()
+    
+	
+    stackedline_chart = pygal.StackedLine(fill=True)
+    
+    stackedline_chart.title = 'Monthly Email Analysis'
+
+    stackedline_chart.x_labels = ('1','2','3','4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 
+    '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
+
+    stackedline_chart.add('Received', activity_inbox)
+     
+    chart = stackedline_chart.render(is_unicode=True)
+    
+    return render_template('monthly_inbox.html', chart = chart)
+
+
+@app.route('/month_outbox')
+
+def month_outbox():
+    activity_outbox  = monthly_activity_outbox()
+    
+	
+    stackedline_chart = pygal.StackedLine(fill=True)
+    
+    stackedline_chart.title = 'Monthly Email Analysis'
+
+    stackedline_chart.x_labels = ('1','2','3','4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 
+    '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
+
+    stackedline_chart.add('Sent', activity_outbox)
+     
+    chart = stackedline_chart.render(is_unicode=True)
+    
+    return render_template('monthly_outbox.html', chart = chart)
 
 
 
@@ -499,7 +620,282 @@ def outbox_week():
     sunday_outbox =  len(Sunday_List)
 
 
-    return monday_outbox,tuesday_outbox,wednesday_outbox,thursday_outbox,friday_outbox,saturday_outbox,sunday_outbox
+    return monday_outbox,tuesday_outbox,wednesday_outbox, \
+    thursday_outbox,friday_outbox,saturday_outbox,sunday_outbox
+
+
+
+
+
+def word_count_daily_inbox():
+
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d=1
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+    mail.select('INBOX')
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, uid = mail.uid('search', None, \
+                          '(SENTSINCE {date})'.format(date=interval))
+
+    x = uid[0].split()
+
+    first = []
+    second = []
+    third = []
+    fourth = []
+    fifth = []
+    word_counts = []
+    final_list = []
+
+
+
+    for i in x:    
+            
+        result, data = mail.uid('fetch', i, 'RFC822')
+    
+    
+        raw_email = data[0][1]
+        email_message = email.message_from_string(raw_email)
+    
+        for part in email_message.walk():
+            if part.get_content_type() == "text/plain": # ignore attachments/html
+                body = part.get_payload(decode=True)
+
+                head,sep,tail = body.partition('--')
+            
+                word_count_length = len(head.split())
+            
+     
+                if (word_count_length<=10):
+                    first.append(word_count_length)
+               
+
+                elif(word_count_length<=30):
+                    second.append(word_count_length)
+       
+           
+                elif(word_count_length<=50):
+
+                    third.append(word_count_length)
+        
+                elif(word_count_length<=100):
+
+                    fourth.append(word_count_length)
+               
+            
+                else:
+                    fifth.append(word_count_length)   
+
+
+    return len(first),len(second),len(third),len(fourth),len(fifth)
+
+
+
+
+def word_count_daily_outbox():
+
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d=1
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+    mail.select('[Gmail]/Sent Mail')
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, uid = mail.uid('search', None, \
+                          '(SENTSINCE {date})'.format(date=interval))
+
+    x = uid[0].split()
+
+    first = []
+    second = []
+    third = []
+    fourth = []
+    fifth = []
+    word_counts = []
+    final_list = []
+
+
+
+    for i in x:    
+            
+        result, data = mail.uid('fetch', i, 'RFC822')
+    
+    
+        raw_email = data[0][1]
+        email_message = email.message_from_string(raw_email)
+    
+        for part in email_message.walk():
+            if part.get_content_type() == "text/plain": # ignore attachments/html
+                body = part.get_payload(decode=True)
+
+                head,sep,tail = body.partition('--')
+            
+                word_count_length = len(head.split())
+            
+     
+                if (word_count_length<=10):
+                    first.append(word_count_length)
+               
+
+                elif(word_count_length<=30):
+                    second.append(word_count_length)
+       
+           
+                elif(word_count_length<=50):
+
+                    third.append(word_count_length)
+        
+                elif(word_count_length<=100):
+
+                    fourth.append(word_count_length)
+               
+            
+                else:
+                    fifth.append(word_count_length)   
+
+
+    return len(first),len(second),len(third),len(fourth),len(fifth)
+
+
+
+def word_count_weekly_inbox():
+
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d=6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+    mail.select('INBOX')
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, uid = mail.uid('search', None, \
+                          '(SENTSINCE {date})'.format(date=interval))
+
+    x = uid[0].split()
+
+    first = []
+    second = []
+    third = []
+    fourth = []
+    fifth = []
+    word_counts = []
+    final_list = []
+
+
+
+    for i in x:    
+            
+        result, data = mail.uid('fetch', i, 'RFC822')
+    
+    
+        raw_email = data[0][1]
+        email_message = email.message_from_string(raw_email)
+    
+        for part in email_message.walk():
+            if part.get_content_type() == "text/plain": # ignore attachments/html
+                body = part.get_payload(decode=True)
+
+                head,sep,tail = body.partition('--')
+            
+                word_count_length = len(head.split())
+            
+     
+                if (word_count_length<=10):
+                    first.append(word_count_length)
+               
+
+                elif(word_count_length<=30):
+                    second.append(word_count_length)
+       
+           
+                elif(word_count_length<=50):
+
+                    third.append(word_count_length)
+        
+                elif(word_count_length<=100):
+
+                    fourth.append(word_count_length)
+               
+            
+                else:
+                    fifth.append(word_count_length)   
+
+
+    return len(first),len(second),len(third),len(fourth),len(fifth)
+
+
+
+
+
+
+def word_count_weekly_outbox():
+
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d=6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+    mail.select('[Gmail]/Sent Mail')
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, uid = mail.uid('search', None, \
+                          '(SENTSINCE {date})'.format(date=interval))
+
+    x = uid[0].split()
+
+    first = []
+    second = []
+    third = []
+    fourth = []
+    fifth = []
+    word_counts = []
+    final_list = []
+
+
+
+    for i in x:    
+            
+        result, data = mail.uid('fetch', i, 'RFC822')
+    
+    
+        raw_email = data[0][1]
+        email_message = email.message_from_string(raw_email)
+    
+        for part in email_message.walk():
+            if part.get_content_type() == "text/plain": # ignore attachments/html
+                body = part.get_payload(decode=True)
+
+                head,sep,tail = body.partition('--')
+            
+                word_count_length = len(head.split())
+            
+     
+                if (word_count_length<=10):
+                    first.append(word_count_length)
+               
+
+                elif(word_count_length<=30):
+                    second.append(word_count_length)
+       
+           
+                elif(word_count_length<=50):
+
+                    third.append(word_count_length)
+        
+                elif(word_count_length<=100):
+
+                    fourth.append(word_count_length)
+               
+            
+                else:
+                    fifth.append(word_count_length)   
+
+
+    return len(first),len(second),len(third),len(fourth),len(fifth)
 
 
 
@@ -508,17 +904,73 @@ def outbox_week():
 
 
 
+def monthly_activity_inbox():
+	    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d=30
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+    mail.select('INBOX')
+
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+
+    result, uid = mail.uid('search', None, \
+     '(SENTSINCE {date})'.format(date=interval))
+
+
+    x = uid[0].split()
+
+    all_dates_list = []
+    for i in x:
+
+        result, data = mail.uid('fetch', i, '(BODY[HEADER.FIELDS (DATE)])')
+        msg = email.message_from_string(data[0][1])                      
+        date_tuple = email.utils.parsedate_tz(msg['Date'])
+        all_dates_list.append(date_tuple[2])
+
+        dates_dict = dict(Counter(all_dates_list))
+
+
+    final_list = dates_dict.values()                                              
+         
+    return final_list
 
 
 
+def monthly_activity_outbox():
+	    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d=30
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+    mail.select('[Gmail]/Sent Mail')
+
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+
+    result, uid = mail.uid('search', None, \
+     '(SENTSINCE {date})'.format(date=interval))
 
 
+    x = uid[0].split()
+
+    all_dates_list = []
+    for i in x:
+
+        result, data = mail.uid('fetch', i, '(BODY[HEADER.FIELDS (DATE)])')
+        msg = email.message_from_string(data[0][1])                      
+        date_tuple = email.utils.parsedate_tz(msg['Date'])
+        all_dates_list.append(date_tuple[2])
+
+        dates_dict = dict(Counter(all_dates_list))
 
 
-
-
-
-
+    final_list = dates_dict.values()                                              
+         
+    return final_list
 
 
 
@@ -626,13 +1078,265 @@ def hello(path=''):
         #eh text e pure svg hai
        
        
-        return render_template('file_view.html', text=context['text'], file=my_file, folder=folder)
+        return render_template('file_view.html', text=context['text'], \
+        file=my_file, folder=folder)
        
 
 @app.route('/search', methods=['POST'])
 def search():
     q = request.form['q']
     return render_template('search.html', request = q)
+
+
+
+
+
+
+
+
+def daily_inbox_data_piechart():
+
+    inbox = 'INBOX'
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 0
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+    mail.select(inbox)
+       
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, inbox_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+    
+    
+    return len(inbox_uids[0].split())
+
+def daily_outbox_data_piechart():
+    
+    
+    outbox = '[Gmail]/Sent Mail'
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 0
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+    
+    mail.select(outbox)
+    
+   
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, outbox_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    
+    return len(outbox_uids[0].split())
+    
+def daily_important_data_piechart():
+    
+   
+    important = '[Gmail]/Important'
+    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 0
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+   
+   
+    mail.select(important)
+    
+   
+   
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, important_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    
+    
+    return len(important_uids[0].split())
+
+def daily_archieved_data_piechart():
+   
+    archieved =  '[Gmail]/All Mail'
+   
+    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 0
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+   
+   
+    
+    mail.select(archieved)
+    
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, archieved_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    return len(archieved_uids[0].split())
+    
+def daily_trashed_data_piechart():
+
+   
+    trashed = '[Gmail]/Trash'
+    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 0
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+    
+    mail.select(trashed)
+   
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, trashed_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    
+    return len(trashed_uids[0].split())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def weekly_inbox_data_piechart():
+
+    inbox = 'INBOX'
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+    mail.select(inbox)
+       
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, inbox_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+    
+    
+    return len(inbox_uids[0].split())
+
+
+
+def weekly_outbox_data_piechart():
+    
+    
+    outbox = '[Gmail]/Sent Mail'
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+    
+    mail.select(outbox)
+    
+   
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, outbox_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    
+    return len(outbox_uids[0].split())
+    
+def weekly_important_data_piechart():
+    
+   
+    important = '[Gmail]/Important'
+    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+   
+   
+    mail.select(important)
+    
+   
+   
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, important_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    
+    
+    return len(important_uids[0].split())
+
+def weekly_archieved_data_piechart():
+   
+    archieved =  '[Gmail]/All Mail'
+   
+    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+   
+   
+    
+    mail.select(archieved)
+    
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, archieved_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    return len(archieved_uids[0].split())
+    
+def weekly_trashed_data_piechart():
+
+   
+    trashed = '[Gmail]/Trash'
+    
+    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+    d = 6
+    user = EMAIL
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.debug = 4
+    mail.authenticate('XOAUTH2', lambda x: auth_string)
+
+    
+    mail.select(trashed)
+   
+    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+    result, trashed_uids = mail.uid('search', None, 
+                      '(SENTSINCE {date})'.format(date=interval))
+
+    
+    return len(trashed_uids[0].split())
+
+
+
+
 
 
 
