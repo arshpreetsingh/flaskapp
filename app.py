@@ -11,7 +11,6 @@ from flask import request
 from os import error
 
 from collections import Counter
-
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_oauthlib.client import OAuth
 
@@ -42,6 +41,21 @@ users = {
 }
 app.config['GOOGLE_ID'] = '458156809693-fbmbg64nseq5m83c43ne2vu02mup676f.apps.googleusercontent.com'
 app.config['GOOGLE_SECRET'] = 'nW7tSPqvxTTGZ19yjfGQDgE2'
+
+app.config['daily'] = '/var/www/flaskapp/ANALYSIS/flow-analysis-daily'
+app.config['weekly'] = '/var/www/flaskapp/ANALYSIS/flow-analysis-weekly'
+app.config['daily_ratio'] = '/var/www/flaskapp/ANALYSIS/email-ratio-daily'
+app.config['weekly_ratio'] = '/var/www/flaskapp/ANALYSIS/email-ratio-weekly'
+
+app.config['daily_wordcount'] = '/var/www/flaskapp/ANALYSIS/wordcount-daily'
+
+app.config['weekly_wordcount'] = '/var/www/flaskapp/ANALYSIS/wordcount-weekly'
+
+app.config['monthly-activity-inbox'] = '/var/www/flaskapp/ANALYSIS/monthly-activity-inbox'
+
+app.config['monthly-activity-outbox'] = '/var/www/flaskapp/ANALYSIS/monthly-activity-outbox'
+
+
 app.debug = True
 app.secret_key = 'development'
 
@@ -149,6 +163,8 @@ def graph_data():
     
     chart = stackedline_chart.render(is_unicode=True)
     
+    stackedline_chart.render_to_file(os.path.join(app.config['daily'],'dalily_'+EMAIL+'_.svg'))
+    
     return render_template('daily.html', chart = chart)
 
 @app.route('/weekly')
@@ -166,6 +182,8 @@ def week_graph_data():
     bar_chart.add('Received', [a1,a2,a3,a4,a5,a6,a7])
     bar_chart.add('Sent',[b1,b2,b3,b4,b5,b6,b7])
     week_chart = bar_chart.render(is_unicode = True)
+    bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
+
     return render_template('weekly.html',week_chart = week_chart)
 
 @app.route('/weekly-pieAnalysis')
@@ -187,6 +205,8 @@ def week_pie_data_graph():
     pie_chart.add('Archived', d)
     pie_chart.add('Trashed',e)
     week_chart = pie_chart.render(is_unicode = True)
+    pie_chart.render_to_file(os.path.join(app.config['weekly_ratio'],'weekly_'+EMAIL+'_.svg'))
+
     return render_template('weekly_pie.html',week_chart = week_chart)
 
 
@@ -212,6 +232,9 @@ def daily_pie_data_graph():
     pie_chart.add('Archived', d)
     pie_chart.add('Trashed',e)
     chart = pie_chart.render(is_unicode = True)
+    pie_chart.render_to_file(os.path.join(app.config['daily_ratio'],'daily_'+EMAIL+'_.svg'))
+
+
     return render_template('daily_pie.html',chart = chart)
 
 @app.route('/daily-wordcount')
@@ -229,7 +252,10 @@ def word_count_daily_data():
     bar_chart.add('Sent',[a1,b1,c1,d1,e1])
     
     word_chart = bar_chart.render(is_unicode = True)
-    
+
+    bar_chart.render_to_file(os.path.join(app.config['daily_wordcount'],'daily_'+EMAIL+'_.svg'))
+
+
     return render_template('daily_word.html',word_chart = word_chart)
 
    
@@ -249,7 +275,9 @@ def word_count_weekly_data():
     bar_chart.add('Sent',[a1,b1,c1,d1,e1])
     
     word_chart = bar_chart.render(is_unicode = True)
-    
+    bar_chart.render_to_file(os.path.join(app.config['weekly_wordcount'],'weekly_'+EMAIL+'_.svg'))
+
+
     return render_template('weekly_word.html',word_chart = word_chart)
 
 @app.route('/month_inbox')
@@ -268,7 +296,8 @@ def month_inbox():
     stackedline_chart.add('Received', activity_inbox)
      
     chart = stackedline_chart.render(is_unicode=True)
-    
+    stackeline_chart.render_to_file(os.path.join(app.config['monthly-activity-inbox'],'monthly_'+EMAIL+'_.svg'))
+
     return render_template('monthly_inbox.html', chart = chart)
 
 
@@ -286,7 +315,8 @@ def month_outbox():
     '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
 
     stackedline_chart.add('Sent', activity_outbox)
-     
+    stackeline_chart.render_to_file(os.path.join(app.config['monthly-activity-outbox'],'monthly_'+EMAIL+'_.svg'))
+
     chart = stackedline_chart.render(is_unicode=True)
     
     return render_template('monthly_outbox.html', chart = chart)
@@ -1072,7 +1102,10 @@ def hello(path=''):
         context = my_file.apply_action(View)
         folder = Folder(app.config['FILES_ROOT'], my_file.get_path())
         if context == None:
-            return render_template('file_unreadable.html', folder=folder)
+
+            folder = my_file.path
+            return send_file(folder)
+#                return render_template('file_unreadable.html', folder=folder)
         
         # text = context['text'] file da text return karda hai.
         #eh text e pure svg hai
