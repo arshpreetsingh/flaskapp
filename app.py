@@ -296,7 +296,7 @@ def month_inbox():
     stackedline_chart.add('Received', activity_inbox)
      
     chart = stackedline_chart.render(is_unicode=True)
-    stackeline_chart.render_to_file(os.path.join(app.config['monthly-activity-inbox'],'monthly_'+EMAIL+'_.svg'))
+    stackedline_chart.render_to_file(os.path.join(app.config['monthly-activity-inbox'],'monthly_'+EMAIL+'_.svg'))
 
     return render_template('monthly_inbox.html', chart = chart)
 
@@ -315,7 +315,7 @@ def month_outbox():
     '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
 
     stackedline_chart.add('Sent', activity_outbox)
-    stackeline_chart.render_to_file(os.path.join(app.config['monthly-activity-outbox'],'monthly_'+EMAIL+'_.svg'))
+    stackedline_chart.render_to_file(os.path.join(app.config['monthly-activity-outbox'],'monthly_'+EMAIL+'_.svg'))
 
     chart = stackedline_chart.render(is_unicode=True)
     
