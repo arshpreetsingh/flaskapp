@@ -171,16 +171,83 @@ def graph_data():
 
 def week_graph_data():
 
-    a1,a2,a3,a4,a5,a6,a7 = inbox_week()    
-    b1,b2,b3,b4,b5,b6,b7 = outbox_week()
+    day_list_inbox = inbox_week()    
+    day_list_outbox = outbox_week()
+    
+
+    try:	
+        a = day_list_inbox['Mon']
+    except:
+        a = 0
+    try:
+        b = day_list_inbox['Tue']
+    except:
+        b = 0
+    try:
+        c = day_list_inbox['Wed']
+    except:
+        c= 0
+    try:
+
+        d = day_list_inbox['Thu']
+    except:
+        d = 0
+    try :
+        e = day_list_inbox['Fri']
+    except:
+        e = 0
+    try:    
+        f = day_list_inbox['Sat']
+    except:
+        f =0
+    try:    
+        g=day_list_inbox['Sun'] 
+    except:
+        g = 0
+
+
+
+    try:	
+        a1 = day_list_outbox['Mon']
+    except:
+        a1 = 0
+    try:
+        b1 = day_list_outbox['Tue']
+    except:
+        b1 = 0
+    try:
+        c1 = day_list_outbox['Wed']
+    except:
+        c1= 0
+    try:
+
+        d1 = day_list_outbox['Thu']
+    except:
+        d1 = 0
+    try :
+        e1 = day_list_outbox['Fri']
+    except:
+        e1 = 0
+    try:    
+        f1 = day_list_outbox['Sat']
+    except:
+        f1 =0
+    try:    
+        g1=day_list_outbox['Sun'] 
+    except:
+        g1 = 0
+
+
+
+
 
 
 
     bar_chart = pygal.Bar()
     bar_chart.title = 'Weekly Email Analysis'
     bar_chart.x_labels = ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
-    bar_chart.add('Received', [a1,a2,a3,a4,a5,a6,a7])
-    bar_chart.add('Sent',[b1,b2,b3,b4,b5,b6,b7])
+    bar_chart.add('Received', [a,b,c,d,e,f,g])
+    bar_chart.add('Sent',[a1,b1,c1,d1,e1,f1,g1])
     week_chart = bar_chart.render(is_unicode = True)
     bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
 
@@ -486,115 +553,38 @@ def outbox_data():
 
 def inbox_week():
     "Weekly analysis inbox"
-
-    Monday_Tuple = ('M','o','n')
-    Monday_List = []
-
-    Tuesday_Tuple = ('T','u','e')
-    Tuesday_List = []
-
-    Wednesday_Tuple = ('W','e','d')
-    Wednesday_List = []
-
-    Thursday_Tuple = ('T','h','u')
-    Thursday_List = []
-
-    Friday_Tuple = ('F','r','i')
-    Friday_List = []
-
-    Saturday_Tuple = ('S','a','t')
-    Saturday_List = []
-
-    Sunday_Tuple = ('S','u','n')
-    Sunday_List = []
-
+    
     auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
-    d=5
+    d=6
     user = EMAIL
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.debug = 4
     mail.authenticate('XOAUTH2', lambda x: auth_string)
-    mail.select('INBOX')
+    mail.select( 'INBOX')
     interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
+    
     result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
-
+    
+    
+    days_list = []
     for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
-        msg['Date']
-        main_date = msg['Date']
-        Date_Tuple = main_date[0],main_date[1],main_date[2]
-      
-        if (Date_Tuple==Monday_Tuple):
-            Monday_List.append(Monday_Tuple)        
+        dates = msg['Date'].split(',')
+        days_list.append(dates[0])
+    final_days_list = dict(Counter(days_list))
     
-        if (Date_Tuple == Tuesday_Tuple):
-            Tuesday_List.append(Tuesday_Tuple)
     
-        if (Date_Tuple == Wednesday_Tuple):
-            Wednesday_List.append(Wednesday_Tuple)
-    
-        if (Date_Tuple == Thursday_Tuple):
-            Thursday_List.append(Thursday_Tuple)
-    
-        if (Date_Tuple == Friday_Tuple):
-            Friday_List.append(Friday_Tuple)
-        
-        if (Date_Tuple == Saturday_Tuple):
-            Saturday_List.append(Saturday_Tuple)
-        
-        if (Date_Tuple == Sunday_Tuple):
-            Sunday_List.append(Sunday_Tuple)
-        
-        
-    monday_inbox = len(Monday_List)
-
-    tuesday_inbox =  len(Tuesday_List)
-
-    wednesday_inbox =  len(Wednesday_List)    
-
-    thursday_inbox = len(Thursday_List)
-
-    friday_inbox =  len(Friday_List)
-
-    saturday_inbox =  len(Saturday_List)
-
-    sunday_inbox =  len(Sunday_List)
-    
-    return monday_inbox,tuesday_inbox,wednesday_inbox,thursday_inbox,friday_inbox,saturday_inbox,sunday_inbox
+    return final_days_list
 
 
 
 def outbox_week():
-    Monday_Tuple = ('M','o','n')
-    Monday_List = []
-
-    Tuesday_Tuple = ('T','u','e')
-    Tuesday_List = []
-
-    Wednesday_Tuple = ('W','e','d')
-    Wednesday_List = []
-
-    Thursday_Tuple = ('T','h','u')
-    Thursday_List = []
-
-    Friday_Tuple = ('F','r','i')
-    Friday_List = []
-
-    Saturday_Tuple = ('S','a','t')
-    Saturday_List = []
-
-    Sunday_Tuple = ('S','u','n')
-    Sunday_List = []
-
-
-
-
 
 
     auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
-    d=5
+    d=6
     user = EMAIL
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.debug = 4
@@ -602,60 +592,17 @@ def outbox_week():
     mail.select( '[Gmail]/Sent Mail')
     interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
     result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
-
+    days_list = []
     for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
-        msg['Date']
-        main_date = msg['Date']
-        Date_Tuple = main_date[0],main_date[1],main_date[2]
-      
-        if (Date_Tuple==Monday_Tuple):
-            Monday_List.append(Monday_Tuple)        
+        dates = msg['Date'].split(',')
+        days_list.apppend(dates[0])
+    final_days_list = dict(Counter(days_list))
     
-        if (Date_Tuple == Tuesday_Tuple):
-            Tuesday_List.append(Tuesday_Tuple)
     
-        if (Date_Tuple == Wednesday_Tuple):
-            Wednesday_List.append(Wednesday_Tuple)
-
-        
-    
-        if (Date_Tuple == Thursday_Tuple):
-            Thursday_List.append(Thursday_Tuple)
-    
-        if (Date_Tuple == Friday_Tuple):
-            Friday_List.append(Friday_Tuple)
-        
-        if (Date_Tuple == Saturday_Tuple):
-            Saturday_List.append(Saturday_Tuple)
-        
-        if (Date_Tuple == Sunday_Tuple):
-            Sunday_List.append(Sunday_Tuple)
-        
-        
-    monday_outbox = len(Monday_List)
-
-    tuesday_outbox =  len(Tuesday_List)
-
-    wednesday_outbox =  len(Wednesday_List)    
-
-    thursday_outbox = len(Thursday_List)
-
-    friday_outbox =  len(Friday_List)
-
-    saturday_outbox =  len(Saturday_List)
-
-    sunday_outbox =  len(Sunday_List)
-
-
-    return monday_outbox,tuesday_outbox,wednesday_outbox, \
-    thursday_outbox,friday_outbox,saturday_outbox,sunday_outbox
-
-
-
-
+    return final_days_list
 
 def word_count_daily_inbox():
 
