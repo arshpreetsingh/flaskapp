@@ -2,7 +2,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-
+import time
+from time import mktime 
 from flask import send_file, make_response
 from flask import Flask, render_template, redirect, request
 from filesystem import Folder, File
@@ -102,6 +103,14 @@ def get_pw(username):
 
 #ACCESS_TOKEN = 0
 #EMAIL = 0
+
+
+def tuple_without(original_tuple, element_to_remove):
+    new_tuple = []
+    for s in list(original_tuple):
+        if not s == element_to_remove:
+            new_tuple.append(s)
+    return tuple(new_tuple)
 
 @app.route('/')
 
@@ -577,8 +586,21 @@ def inbox_week():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
-        dates = msg['Date'].split(',')
-        days_list.append(dates[0])
+        
+        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+
+        # Reducing the leanth of TUple
+        
+        reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+       
+       # converting into string
+       
+        date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
+        t = time.mktime(reduced_date_tuple)
+       # getting day name 
+        dates = time.strftime("%a", time.gmtime(t))
+        
+        days_list.append(dates)
     final_days_list = dict(Counter(days_list))
     
     
@@ -603,8 +625,23 @@ def outbox_week():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
-        dates = msg['Date'].split(',')
-        days_list.append(dates[0])
+        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+
+        # Reducing the leanth of TUple
+        
+        reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+       
+       # converting into string
+       
+        date_tuple_string = time.strftime("%Y-%m-%d",  reduced_date_tuple )
+        t = time.mktime( reduced_date_tuple )
+       # getting day name 
+        dates = time.strftime("%a", time.gmtime(t))
+        
+        days_list.append(dates)
+
+
+
     final_days_list_outbox = dict(Counter(days_list))
     
     
