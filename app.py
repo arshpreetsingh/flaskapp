@@ -10,6 +10,8 @@ from action import *
 from flask import request
 from os import error
 
+import logging
+from logging.handlers import RotatingFileHandler
 from collections import Counter
 from flask import Flask, redirect, url_for, session, request, jsonify
 from flask_oauthlib.client import OAuth
@@ -57,6 +59,8 @@ app.config['monthly-activity-outbox'] = '/var/www/flaskapp/ANALYSIS/monthly-acti
 
 
 app.debug = True
+
+
 app.secret_key = 'development'
 
 # OAuth class da instance create kitta hoya hai...
@@ -247,7 +251,9 @@ def week_graph_data():
     bar_chart.title = 'Weekly Email Analysis'
     bar_chart.x_labels = ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
     bar_chart.add('Received', [a,b,c,d,e,f,g])
+
     bar_chart.add('Sent',[a1,b1,c1,d1,e1,f1,g1])
+
     week_chart = bar_chart.render(is_unicode = True)
     bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
 
@@ -598,11 +604,11 @@ def outbox_week():
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
         dates = msg['Date'].split(',')
-        days_list.apppend(dates[0])
-    final_days_list = dict(Counter(days_list))
+        days_list.append(dates[0])
+    final_days_list_outbox = dict(Counter(days_list))
     
     
-    return final_days_list
+    return final_days_list_outbox
 
 def word_count_daily_inbox():
 
@@ -1321,6 +1327,12 @@ def weekly_trashed_data_piechart():
 
 
 if __name__ == '__main__':
+    
+    handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
+
+
     app.run()
 #    ctx = google.test_request_context('/waheguru',method='POST')
  #   ctx.push()
