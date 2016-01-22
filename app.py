@@ -264,6 +264,7 @@ def week_graph_data():
     bar_chart.add('Sent',[a1,b1,c1,d1,e1,f1,g1])
 
     week_chart = bar_chart.render(is_unicode = True)
+    
     bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
 
     return render_template('weekly.html',week_chart = week_chart)
@@ -414,7 +415,7 @@ def inbox_data():
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.debug = 4
     mail.authenticate('XOAUTH2', lambda x: auth_string)
-    mail.select('INBOX')
+    mail.select("[Gmail]/All Mail")
 
     interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
     result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
@@ -437,44 +438,38 @@ def inbox_data():
 
     for num in data[0].split():
 
-        result, data = mail.uid('fetch',num,'(RFC822)')
-        msg = email.message_from_string(data[0][1])
+        result, data = mail.uid('fetch',num,'(RFC822)')    
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                msg = email.message_from_string(response_part[1])
+                for header in ['to']:
+                    if EMAIL in msg[header].lower():                 
+                        msg = email.message_from_string(data[0][1]) 
+                        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+                        Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
+                        Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]    
+                        Today = datetime.today().timetuple()
+                        Today_tuple = Today[0],Today[1],Today[2]
     
-    
-        main_tuple = email.utils.parsedate_tz(msg['Date'])        
-        Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
-        Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]
-    
-    
-        Today = datetime.today().timetuple()
-        Today_tuple = Today[0],Today[1],Today[2]
-    
-        if Date_Tuple==Today_tuple:
-            xday.append(Date_Tuple)
-        
-        
-            if Time_Tuple>Start_Day:
-                if Time_Tuple<Mid_Morning:
-                
-                
-                    Start_Day_List.append(Time_Tuple)
-                
-            if Time_Tuple>Mid_Morning:
-                if Time_Tuple<Mid_Day:
-                
-                
-                    Mid_Morning_List.append(Time_Tuple)
-         
-         
-            if Time_Tuple>Mid_Day:
-                if Time_Tuple<End_Day:
-                
-                     Mid_Day_List.append(Time_Tuple)
+                        if Date_Tuple==Today_tuple:
+                            xday.append(Date_Tuple)
+                       
+                        if Time_Tuple>Start_Day:
+                            if Time_Tuple<Mid_Morning:
+                                Start_Day_List.append(Time_Tuple)
+                       
+                        if Time_Tuple>Mid_Morning:
+                            if Time_Tuple<Mid_Day:
+                                Mid_Morning_List.append(Time_Tuple)
+                       
+                        if Time_Tuple>Mid_Day:
+                            if Time_Tuple<End_Day:
+                                Mid_Day_List.append(Time_Tuple)
                  
-            if Time_Tuple>End_Day:
-                if Time_Tuple<Dead_End:
+                            if Time_Tuple>End_Day:
+                                if Time_Tuple<Dead_End:
            
-                    End_Day_List.append(Time_Tuple)
+                                    End_Day_List.append(Time_Tuple)
                  
                  
     Start_day = len(Start_Day_List)
@@ -575,32 +570,42 @@ def inbox_week():
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.debug = 4
     mail.authenticate('XOAUTH2', lambda x: auth_string)
-    mail.select( 'INBOX')
+    mail.select("[Gmail]/All Mail")
+    
+    # if I will select [Gmail]/All-mail then how to find Inbox messages in imaplib
+    
     interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
+    
     
     result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
     
     
     days_list = []
+       
     for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
-        msg = email.message_from_string(data[0][1])
+    
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                msg = email.message_from_string(response_part[1])
+                for header in ['to']:
+                    if EMAIL in msg[header]:
+                            
+                        msg = email.message_from_string(data[0][1])
         
-        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+                        main_tuple = email.utils.parsedate_tz(msg['Date'])        
 
-        # Reducing the leanth of TUple
-        
-        reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+# Reducing the leanth of TUple to find real leangth 
+
+                        reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+                        date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
+                        t = time.mktime(reduced_date_tuple)
        
-       # converting into string
-       
-        date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
-        t = time.mktime(reduced_date_tuple)
        # getting day name 
-        dates = time.strftime("%a", time.gmtime(t))
+                        dates = time.strftime("%a", time.gmtime(t))
         
-        days_list.append(dates)
+                        days_list.append(dates)
     final_days_list = dict(Counter(days_list))
     
     
@@ -623,7 +628,7 @@ def outbox_week():
     days_list = []
     for num in data[0].split():
 
-        result, data = mail.uid('fetch',num,'(RFC822)')
+        result, data = mail.uid('fetch',num,'(RFC822)')  
         msg = email.message_from_string(data[0][1])
         main_tuple = email.utils.parsedate_tz(msg['Date'])        
 
