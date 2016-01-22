@@ -950,13 +950,16 @@ def monthly_activity_inbox():
     all_dates_list = []
     for i in x:
 
-        result, data = mail.uid('fetch', i, '(BODY[HEADER.FIELDS (DATE)])')
-        msg = email.message_from_string(data[0][1])                      
-        date_tuple = email.utils.parsedate_tz(msg['Date'])
-        all_dates_list.append(date_tuple[2])
-
-        dates_dict = dict(Counter(all_dates_list))
-
+        result, data = mail.uid('fetch', i, '(RFC822)')
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                msg = email.message_from_string(response_part[1])
+                for header in ['to']:
+                    if EMAIL in msg[header]:
+                        msg = email.message_from_string(data[0][1])                      
+                        date_tuple = email.utils.parsedate_tz(msg['Date'])
+                        all_dates_list.append(date_tuple[2])
+                        dates_dict = dict(Counter(all_dates_list))
 
     final_list = dates_dict.values()                                              
          
@@ -983,17 +986,17 @@ def monthly_activity_outbox():
     x = uid[0].split()
 
     all_dates_list = []
+    
     for i in x:
 
         result, data = mail.uid('fetch', i, '(BODY[HEADER.FIELDS (DATE)])')
         msg = email.message_from_string(data[0][1])                      
         date_tuple = email.utils.parsedate_tz(msg['Date'])
         all_dates_list.append(date_tuple[2])
-
         dates_dict = dict(Counter(all_dates_list))
 
-
     final_list = dates_dict.values()                                              
+    
          
     return final_list
 
