@@ -947,7 +947,7 @@ def monthly_activity_inbox():
      '(SENTSINCE {date})'.format(date=interval))
 
 
-    x = tuple(uid[0].split())
+    x = uid[0].split()
 
     all_dates_list = []
     for i in x:
