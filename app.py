@@ -435,15 +435,16 @@ def inbox_data():
 
     Dead_End = (24,00,00)
     Dead_End_List = []
-
-    for num in data[0].split():
+    tp = tuple(data[0].split())
+    
+    for num in tp:
 
         result, data = mail.uid('fetch',num,'(RFC822)')    
         for response_part in data:
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
-                    if EMAIL in msg[header].lower():                 
+                    if (EMAIL in msg[header] or '@eyecarepro.net' in msg[header]):                 
                         msg = email.message_from_string(data[0][1]) 
                         main_tuple = email.utils.parsedate_tz(msg['Date'])        
                         Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
@@ -508,8 +509,8 @@ def outbox_data():
 
     Dead_End = (24,00,00)
     Dead_End_List = []
-
-    for num in data[0].split():
+    tp = tuple(data[0].split())
+    for num in tp:
 
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
@@ -581,8 +582,8 @@ def inbox_week():
     
     
     days_list = []
-       
-    for num in data[0].split():
+    tp = tuple(data[0].split())   
+    for num in tp:
 
         result, data = mail.uid('fetch',num,'(RFC822)')
     
@@ -590,7 +591,7 @@ def inbox_week():
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
-                    if EMAIL in msg[header]:
+                    if (EMAIL in msg[header] or '@eyecarepro.net' in msg[header]):
                             
                         msg = email.message_from_string(data[0][1])
         
@@ -626,7 +627,8 @@ def outbox_week():
     interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
     result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
     days_list = []
-    for num in data[0].split():
+    tp = tuple(data[0].split())
+    for num in tp:
 
         result, data = mail.uid('fetch',num,'(RFC822)')  
         msg = email.message_from_string(data[0][1])
@@ -945,7 +947,7 @@ def monthly_activity_inbox():
      '(SENTSINCE {date})'.format(date=interval))
 
 
-    x = uid[0].split()
+    x = tuple(uid[0].split())
 
     all_dates_list = []
     for i in x:
@@ -955,7 +957,8 @@ def monthly_activity_inbox():
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
-                    if EMAIL in msg[header]:
+					
+                    if (EMAIL in msg[header] or '@eyecarepro.net' in msg[header]):
                         msg = email.message_from_string(data[0][1])                      
                         date_tuple = email.utils.parsedate_tz(msg['Date'])
                         all_dates_list.append(date_tuple[2])
@@ -999,32 +1002,6 @@ def monthly_activity_outbox():
     
          
     return final_list
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1236,14 +1213,6 @@ def daily_trashed_data_piechart():
 
     
     return len(trashed_uids[0].split())
-
-
-
-
-
-
-
-
 
 
 
