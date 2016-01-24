@@ -939,7 +939,7 @@ def monthly_activity_inbox():
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.debug = 4
     mail.authenticate('XOAUTH2', lambda x: auth_string)
-    mail.select('INBOX')
+    mail.select("[Gmail]/All Mail")
 
     interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
 
