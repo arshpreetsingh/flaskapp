@@ -608,19 +608,21 @@ def inbox_week():
                     if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
                             
                         msg = email.message_from_string(data[0][1])
-        
-                        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+                        try:
+                            main_tuple = email.utils.parsedate_tz(msg['Date'])        
 
 # Reducing the leanth of TUple to find real leangth 
 
-                        reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
-                        date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
-                        t = time.mktime(reduced_date_tuple)
-       
+                            reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+                            date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
+                            t = time.mktime(reduced_date_tuple)
+                       
        # getting day name 
-                        dates = time.strftime("%a", time.gmtime(t))
+                            dates = time.strftime("%a", time.gmtime(t))
         
-                        days_list.append(dates)
+                            days_list.append(dates)
+                        except:
+							pass
     final_days_list = dict(Counter(days_list))
     
     
@@ -643,25 +645,28 @@ def outbox_week():
     days_list = []
     
     for num in data[0].split():
+		
+        try:
 
-        result, data = mail.uid('fetch',num,'(RFC822)')  
-        msg = email.message_from_string(data[0][1])
-        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+            result, data = mail.uid('fetch',num,'(RFC822)')  
+            msg = email.message_from_string(data[0][1])
+            main_tuple = email.utils.parsedate_tz(msg['Date'])        
 
         # Reducing the leanth of TUple
         
-        reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+            reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
        
        # converting into string
        
-        date_tuple_string = time.strftime("%Y-%m-%d",  reduced_date_tuple )
-        t = time.mktime( reduced_date_tuple )
+            date_tuple_string = time.strftime("%Y-%m-%d",  reduced_date_tuple )
+            t = time.mktime( reduced_date_tuple )
        # getting day name 
-        dates = time.strftime("%a", time.gmtime(t))
+            dates = time.strftime("%a", time.gmtime(t))
         
-        days_list.append(dates)
+            days_list.append(dates)
 
-
+        except:
+			pass
 
     final_days_list_outbox = dict(Counter(days_list))
     
