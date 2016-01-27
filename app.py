@@ -160,6 +160,7 @@ def logout():
 @app.route('/daily')
 
 def graph_data():
+    
     aa,bb,cc,dd = inbox_data()
     a,b,c,d = outbox_data()
     
@@ -407,6 +408,7 @@ def month_outbox():
 
 
 def inbox_data():
+	
     "Daily analysis"
 
     auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
@@ -445,10 +447,19 @@ def inbox_data():
                 for header in ['to']:
                     if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):                 
                         
+                        result, data = mail.uid('fetch',num,'(RFC822)') 
                         msg = email.message_from_string(data[0][1]) 
-                        main_tuple = email.utils.parsedate_tz(msg['Date'])        
-                        Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
-                        Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]    
+                        try:
+							
+                            main_tuple = email.utils.parsedate_tz(msg['Date'])        
+                        
+                            Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
+                            Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]    
+                        
+                        except:
+							pass
+							
+							
                         Today = datetime.today().timetuple()
                         Today_tuple = Today[0],Today[1],Today[2]
     
@@ -515,11 +526,13 @@ def outbox_data():
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
     
-    
-        main_tuple = email.utils.parsedate_tz(msg['Date'])        
-        Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
-        Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]
-    
+        try:  
+            main_tuple = email.utils.parsedate_tz(msg['Date'])        
+            Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
+            Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]
+        except:
+			
+			pass 
     
         Today = datetime.today().timetuple()
         Today_tuple = Today[0],Today[1],Today[2]
