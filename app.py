@@ -1343,6 +1343,17 @@ def weekly_trashed_data_piechart():
 if __name__ == '__main__':
 
     app.run()
+    ADMINS = ['arsh840@gmail.com']
+if not app.debug:
+    import logging
+    from logging.handlers import SMTPHandler
+    mail_handler = SMTPHandler('127.0.0.1',
+                               'server-error@example.com',
+                               ADMINS, 'YourApplication Failed')
+    mail_handler.setLevel(logging.ERROR)
+    app.logger.addHandler(mail_handler)
+
+
 #    ctx = google.test_request_context('/waheguru',method='POST')
  #   ctx.push()
   #  p = google.get_google_oauth_token()
