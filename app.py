@@ -444,7 +444,7 @@ def inbox_data():
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
-                    if (EMAIL in msg[header] or '@eyecarepro.net' in msg[header]):                 
+                    if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):                 
                         msg = email.message_from_string(data[0][1]) 
                         main_tuple = email.utils.parsedate_tz(msg['Date'])        
                         Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
@@ -582,7 +582,7 @@ def inbox_week():
     
     
     days_list = []
-    tp = tuple(data[0].split())   
+    tp = tuple()   
     for num in tp:
 
         result, data = mail.uid('fetch',num,'(RFC822)')
@@ -591,7 +591,7 @@ def inbox_week():
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
-                    if (EMAIL in msg[header] or '@eyecarepro.net' in msg[header]):
+                    if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
                             
                         msg = email.message_from_string(data[0][1])
         
