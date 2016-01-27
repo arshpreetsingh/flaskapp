@@ -435,9 +435,8 @@ def inbox_data():
 
     Dead_End = (24,00,00)
     Dead_End_List = []
-    tp = tuple(data[0].split())
     
-    for num in tp:
+    for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')    
         for response_part in data:
@@ -445,6 +444,7 @@ def inbox_data():
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
                     if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):                 
+                        
                         msg = email.message_from_string(data[0][1]) 
                         main_tuple = email.utils.parsedate_tz(msg['Date'])        
                         Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
@@ -509,8 +509,8 @@ def outbox_data():
 
     Dead_End = (24,00,00)
     Dead_End_List = []
-    tp = tuple(data[0].split())
-    for num in tp:
+    
+    for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
         msg = email.message_from_string(data[0][1])
@@ -582,8 +582,9 @@ def inbox_week():
     
     
     days_list = []
-    tp = tuple()   
-    for num in tp:
+    
+    
+    for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')
     
@@ -627,8 +628,8 @@ def outbox_week():
     interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
     result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
     days_list = []
-    tp = tuple(data[0].split())
-    for num in tp:
+    
+    for num in data[0].split():
 
         result, data = mail.uid('fetch',num,'(RFC822)')  
         msg = email.message_from_string(data[0][1])
