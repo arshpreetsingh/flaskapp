@@ -977,12 +977,18 @@ def monthly_activity_inbox():
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
 					
-                    if (EMAIL in msg[header] or '@eyecarepro.net' in msg[header]):
-                        msg = email.message_from_string(data[0][1])                      
-                        date_tuple = email.utils.parsedate_tz(msg['Date'])
-                        all_dates_list.append(date_tuple[2])
-                        dates_dict = dict(Counter(all_dates_list))
-
+                    if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
+		                
+                        try:
+							
+                            result, data = mail.uid('fetch', i, '(RFC822)')
+        				
+                            msg = email.message_from_string(data[0][1])                      
+                            date_tuple = email.utils.parsedate_tz(msg['Date'])
+                            all_dates_list.append(date_tuple[2])
+                            dates_dict = dict(Counter(all_dates_list))
+                        except:
+							pass
     final_list = dates_dict.values()                                              
          
     return final_list
