@@ -440,14 +440,14 @@ def inbox_data():
     
     for num in data[0].split():
 
-        result, data = mail.uid('fetch',num,'(RFC822)')    
+        result, data = mail.uid('fetch',num,'(BODY.PEEK[])')    
         for response_part in data:
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
                     if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):                 
                         
-                        result, data = mail.uid('fetch',num,'(RFC822)') 
+                        result, data = mail.uid('fetch',num,'(BODY.PEEK[])') 
                         msg = email.message_from_string(data[0][1]) 
                         try:
 							
@@ -523,7 +523,7 @@ def outbox_data():
     
     for num in data[0].split():
 
-        result, data = mail.uid('fetch',num,'(RFC822)')
+        result, data = mail.uid('fetch',num,'(BODY.PEEK[])')
         msg = email.message_from_string(data[0][1])
     
         try:  
@@ -599,7 +599,7 @@ def inbox_week():
     
     for num in data[0].split():
 
-        result, data = mail.uid('fetch',num,'(RFC822)')
+        result, data = mail.uid('fetch',num,'(BODY.PEEK[])')
     
         for response_part in data:
             if isinstance(response_part, tuple):
@@ -648,7 +648,7 @@ def outbox_week():
 		
         try:
 
-            result, data = mail.uid('fetch',num,'(RFC822)')  
+            result, data = mail.uid('fetch',num,'(BODY.PEEK[])')  
             msg = email.message_from_string(data[0][1])
             main_tuple = email.utils.parsedate_tz(msg['Date'])        
 
@@ -905,7 +905,7 @@ def word_count_weekly_outbox():
 
     for i in x:    
             
-        result, data = mail.uid('fetch', i, 'RFC822')
+        result, data = mail.uid('fetch', i, '(BODY.PEEK[])')
     
     
         raw_email = data[0][1]
@@ -981,7 +981,7 @@ def monthly_activity_inbox():
 		                
                         try:
 							
-                            result, data = mail.uid('fetch', i, '(RFC822)')
+                            result, data = mail.uid('fetch', i, '(BODY.PEEK[])')
         				
                             msg = email.message_from_string(data[0][1])                      
                             date_tuple = email.utils.parsedate_tz(msg['Date'])
