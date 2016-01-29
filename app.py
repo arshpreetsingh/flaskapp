@@ -700,7 +700,7 @@ def word_count_daily_inbox():
 
     for i in x:    
             
-        result, data = mail.uid('fetch', i, 'RFC822')
+        result, data = mail.uid('fetch', i, '(BODY.PEEK[])')
     
     
         raw_email = data[0][1]
@@ -768,7 +768,7 @@ def word_count_daily_outbox():
 
     for i in x:    
             
-        result, data = mail.uid('fetch', i, 'RFC822')
+        result, data = mail.uid('fetch', i, '(BODY.PEEK[])')
     
     
         raw_email = data[0][1]
@@ -835,7 +835,7 @@ def word_count_weekly_inbox():
 
     for i in x:    
             
-        result, data = mail.uid('fetch', i, 'RFC822')
+        result, data = mail.uid('fetch', i,'(BODY.PEEK[])')
     
     
         raw_email = data[0][1]
@@ -971,7 +971,7 @@ def monthly_activity_inbox():
     all_dates_list = []
     for i in x:
 
-        result, data = mail.uid('fetch', i, '(RFC822)')
+        result, data = mail.uid('fetch', i, '(BODY.PEEK[])')
         for response_part in data:
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
