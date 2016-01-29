@@ -161,13 +161,13 @@ def logout():
 
 def graph_data():
     
-    aa,bb,cc,dd = inbox_data()
+    aa,bb,cc,dd,date = inbox_data()
     a,b,c,d = outbox_data()
     
     "Start making Graphs"
     
     stackedline_chart = pygal.StackedLine(fill=True)
-    stackedline_chart.title = 'Daily Email Analysis'
+    stackedline_chart.title = 'Daily Email Analysis' + ' \n Date = '+date
 
     stackedline_chart.x_labels = ('Midnight','6 AM','Noon','6 PM')
 
@@ -185,7 +185,7 @@ def graph_data():
 
 def week_graph_data():
 
-    day_list_inbox = inbox_week()    
+    day_list_inbox,week_date = inbox_week()    
     day_list_outbox = outbox_week()
     
 
@@ -251,14 +251,9 @@ def week_graph_data():
     except:
         g1 = 0
 
-
-
-
-
-
-
     bar_chart = pygal.Bar()
-    bar_chart.title = 'Weekly Email Analysis'
+    bar_chart.title = 'Weekly Email Analysis'+'\n'+'Date Range = From '+ \
+    str(datetime.now() - timedelta(6)) + ' '+'to'+ ' ' + week_date
     bar_chart.x_labels = ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
     bar_chart.add('Received', [a,b,c,d,e,f,g])
 
@@ -282,7 +277,8 @@ def week_pie_data_graph():
 
 
     pie_chart = pygal.Pie()
-    pie_chart.title = 'Different Parts of your Gmail'
+    pie_chart.title = 'Different Parts of your Gmail'+ '\n'+'Date Range = From '+ \
+    str(datetime.now() - timedelta(6)) + ' '+'to'+ ' ' + str(datetime.now())
     pie_chart.add('Inbox', a)
     pie_chart.add('Sent', b)
     pie_chart.add('Important',c )
@@ -309,7 +305,7 @@ def daily_pie_data_graph():
 
 
     pie_chart = pygal.Pie()
-    pie_chart.title = 'Different Parts of your Gmail'
+    pie_chart.title = 'Different Parts of your Gmail'+'\n'+'Date='+str(datetime.now())
     pie_chart.add('Inbox', a)
     pie_chart.add('Sent', b)
     pie_chart.add('Important',c )
@@ -330,7 +326,7 @@ def word_count_daily_data():
     a1,b1,c1,d1,e1 = word_count_daily_outbox()
     
     bar_chart = pygal.Bar()
-    bar_chart.title = 'Word Count Analysis'
+    bar_chart.title = 'Word Count Analysis'+'\n'+'Date='+str(datetime.now())
     bar_chart.x_labels = ('Words < 10','Words < 30','Words < 50','Words < 100','More than 100s')
     bar_chart.add('Received', [a,b,c,d,e])
     bar_chart.add('Sent',[a1,b1,c1,d1,e1])
@@ -353,7 +349,8 @@ def word_count_weekly_data():
     a1,b1,c1,d1,e1 = word_count_weekly_outbox()
     
     bar_chart = pygal.Bar()
-    bar_chart.title = 'Word Count Analysis'
+    bar_chart.title = 'Word Count Analysis'+ '\n'+'Date Range = From '+ \
+    str(datetime.now() - timedelta(6)) + ' '+'to'+ ' ' + str(datetime.now())
     bar_chart.x_labels = ('Words < 10','Words < 30','Words < 50','Words < 100','More than 100s')
     bar_chart.add('Received', [a,b,c,d,e])
     bar_chart.add('Sent',[a1,b1,c1,d1,e1])
@@ -372,7 +369,8 @@ def month_inbox():
 	
     stackedline_chart = pygal.StackedLine(fill=True)
     
-    stackedline_chart.title = 'Monthly Email Analysis'
+    stackedline_chart.title = 'Monthly Email Analysis'+ '\n'+'Date Range = From '+ \
+    str(datetime.now() - timedelta(30)) + ' '+'to'+ ' ' + str(datetime.now())
 
     stackedline_chart.x_labels = ('1','2','3','4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 
     '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
@@ -393,7 +391,8 @@ def month_outbox():
 	
     stackedline_chart = pygal.StackedLine(fill=True)
     
-    stackedline_chart.title = 'Monthly Email Analysis'
+    stackedline_chart.title = 'Monthly Email Analysis'+ '\n'+'Date Range = From '+ \
+    str(datetime.now() - timedelta(6)) + ' '+'to'+ ' ' + str(datetime.now())
 
     stackedline_chart.x_labels = ('1','2','3','4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 
     '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
@@ -453,6 +452,8 @@ def inbox_data():
 							
                             main_tuple = email.utils.parsedate_tz(msg['Date'])        
                         
+                        # we can use this message msg['Date'] and put it in Graph or date Tuple.
+                        
                             Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
                             Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]    
                         
@@ -489,7 +490,7 @@ def inbox_data():
     Mid_day = len(Mid_Day_List)  
     End_day = len(End_Day_List)  
     
-    return Start_day,Mid_morning,Mid_day,End_day
+    return Start_day,Mid_morning,Mid_day,End_day,msg['Date']
 
 def outbox_data():
     "Daily analysis"
@@ -528,6 +529,11 @@ def outbox_data():
     
         try:  
             main_tuple = email.utils.parsedate_tz(msg['Date'])        
+            
+            
+                        # we can use this message msg['Date'] and put it in Graph or date Tuple.
+                        
+                        
             Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
             Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]
         except:
@@ -614,19 +620,25 @@ def inbox_week():
 # Reducing the leanth of TUple to find real leangth 
 
                             reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
+                          
                             date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
+                          
                             t = time.mktime(reduced_date_tuple)
                        
        # getting day name 
                             dates = time.strftime("%a", time.gmtime(t))
         
                             days_list.append(dates)
+                        
                         except:
 							pass
+    
+    # we can use this Date range here. maybe days_list or something elase.
+    
     final_days_list = dict(Counter(days_list))
     
     
-    return final_days_list
+    return final_days_list,msg['Date']
 
 
 
@@ -670,6 +682,7 @@ def outbox_week():
 
     final_days_list_outbox = dict(Counter(days_list))
     
+    # here we can also return date range
     
     return final_days_list_outbox
 
@@ -735,6 +748,7 @@ def word_count_daily_inbox():
                 else:
                     fifth.append(word_count_length)   
 
+# we can use msg['Date'] function here
 
     return len(first),len(second),len(third),len(fourth),len(fifth)
 
