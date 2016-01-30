@@ -392,7 +392,7 @@ def month_outbox():
     stackedline_chart = pygal.StackedLine(fill=True)
     
     stackedline_chart.title = 'Monthly Email Analysis'+ '\n'+'Date Range = From '+ \
-    str(datetime.now() - timedelta(6)) + ' '+'to'+ ' ' + str(datetime.now())
+    str(datetime.now() - timedelta(30)) + ' '+'to'+ ' ' + str(datetime.now())
 
     stackedline_chart.x_labels = ('1','2','3','4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', 
     '16' ,'17', '18' ,'19', '20' ,'21', '22', '23' ,'24', '25', '26', '27', '28', '29', '30')
@@ -1030,13 +1030,14 @@ def monthly_activity_outbox():
     all_dates_list = []
     
     for i in x:
-
-        result, data = mail.uid('fetch', i, '(BODY[HEADER.FIELDS (DATE)])')
-        msg = email.message_from_string(data[0][1])                      
-        date_tuple = email.utils.parsedate_tz(msg['Date'])
-        all_dates_list.append(date_tuple[2])
-        dates_dict = dict(Counter(all_dates_list))
-
+        try:
+            result, data = mail.uid('fetch', i, '(BODY[HEADER.FIELDS (DATE)])')
+            msg = email.message_from_string(data[0][1])                      
+            date_tuple = email.utils.parsedate_tz(msg['Date'])
+            all_dates_list.append(date_tuple[2])
+            dates_dict = dict(Counter(all_dates_list))
+        except:
+			pass
     final_list = dates_dict.values()                                              
     
          
