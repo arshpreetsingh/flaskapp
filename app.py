@@ -105,12 +105,16 @@ def get_pw(username):
 #EMAIL = 0
 
 
-def tuple_without(original_tuple, element_to_remove):
-    new_tuple = []
-    for s in list(original_tuple):
-        if not s == element_to_remove:
-            new_tuple.append(s)
-    return tuple(new_tuple)
+def week_list_func():
+    """ A function returning list of last 6 days in 3-tuple"""
+    
+    date_list = [] 
+    for i in xrange(7):
+        d=date.today() - timedelta(i)
+        t = d.year, d.month, d.day
+        date_list.append(t)
+    return reversed(date_list)
+
 
 @app.route('/')
 
@@ -185,79 +189,25 @@ def graph_data():
 
 def week_graph_data():
 
-    day_list_inbox,week_date = inbox_week()    
+    day_list_inbox = inbox_week()    
     day_list_outbox = outbox_week()
     
-
-    try:	
-        a = day_list_inbox['Mon']
-    except:
-        a = 0
-    try:
-        b = day_list_inbox['Tue']
-    except:
-        b = 0
-    try:
-        c = day_list_inbox['Wed']
-    except:
-        c= 0
-    try:
-
-        d = day_list_inbox['Thu']
-    except:
-        d = 0
-    try :
-        e = day_list_inbox['Fri']
-    except:
-        e = 0
-    try:    
-        f = day_list_inbox['Sat']
-    except:
-        f =0
-    try:    
-        g=day_list_inbox['Sun'] 
-    except:
-        g = 0
-
-
-
-    try:	
-        a1 = day_list_outbox['Mon']
-    except:
-        a1 = 0
-    try:
-        b1 = day_list_outbox['Tue']
-    except:
-        b1 = 0
-    try:
-        c1 = day_list_outbox['Wed']
-    except:
-        c1= 0
-    try:
-
-        d1 = day_list_outbox['Thu']
-    except:
-        d1 = 0
-    try :
-        e1 = day_list_outbox['Fri']
-    except:
-        e1 = 0
-    try:    
-        f1 = day_list_outbox['Sat']
-    except:
-        f1 =0
-    try:    
-        g1=day_list_outbox['Sun'] 
-    except:
-        g1 = 0
-
+    # shorten the dates and tuple
+    
+    dates_inbox = tuple(a[:-7] for a in day_list_inbox)
+    dates_outbox = tuple(a[:-7] for a in day_list_outbox)
+    
+    week_list = week_list_func()
+    
     bar_chart = pygal.Bar()
-    bar_chart.title = 'Weekly Email Analysis'+'\n'+'Date Range = From '+ \
-    str(datetime.now() - timedelta(6)) + ' '+'to'+ ' ' + week_date
-    bar_chart.x_labels = ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
-    bar_chart.add('Received', [a,b,c,d,e,f,g])
-
-    bar_chart.add('Sent',[a1,b1,c1,d1,e1,f1,g1])
+    
+    bar_chart.title = 'Weekly Email Analysis'
+    
+    bar_chart.x_labels = (list(week_list_func()))
+    
+    bar_chart.add('Received', [sum(t==i for t in dates_inbox) for i in week_list])
+    
+    bar_chart.add('Sent',[sum(t==i for t in dates_outbox) for i in week_list])
 
     week_chart = bar_chart.render(is_unicode = True)
     
@@ -607,38 +557,19 @@ def inbox_week():
 
         result, data = mail.uid('fetch',num,'(BODY.PEEK[])')
     
+        
         for response_part in data:
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
+                 
                 for header in ['to']:
                     if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
-                            
-                        msg = email.message_from_string(data[0][1])
-                        try:
-                            main_tuple = email.utils.parsedate_tz(msg['Date'])        
-
-# Reducing the leanth of TUple to find real leangth 
-
-                            reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
-                          
-                            date_tuple_string = time.strftime("%Y-%m-%d", reduced_date_tuple)
-                          
-                            t = time.mktime(reduced_date_tuple)
-                       
-       # getting day name 
-                            dates = time.strftime("%a", time.gmtime(t))
-        
-                            days_list.append(dates)
-                        
-                        except:
-							pass
+                           
+                          msg = email.message_from_string(data[0][1])
+                          main_tuple = email.utils.parsedate_tz(msg['Date'])        
+                          days_list.append(main_tuple)                           
     
-    # we can use this Date range here. maybe days_list or something elase.
-    
-    final_days_list = dict(Counter(days_list))
-    
-    
-    return final_days_list,msg['Date']
+    return days_list
 
 
 
@@ -658,33 +589,13 @@ def outbox_week():
     
     for num in data[0].split():
 		
-        try:
-
-            result, data = mail.uid('fetch',num,'(BODY.PEEK[])')  
-            msg = email.message_from_string(data[0][1])
-            main_tuple = email.utils.parsedate_tz(msg['Date'])        
-
-        # Reducing the leanth of TUple
-        
-            reduced_date_tuple = tuple_without(main_tuple,main_tuple[8])
-       
-       # converting into string
-       
-            date_tuple_string = time.strftime("%Y-%m-%d",  reduced_date_tuple )
-            t = time.mktime( reduced_date_tuple )
-       # getting day name 
-            dates = time.strftime("%a", time.gmtime(t))
-        
-            days_list.append(dates)
-
-        except:
-			pass
-
-    final_days_list_outbox = dict(Counter(days_list))
+        result, data = mail.uid('fetch',num,'(BODY.PEEK[])')  
+        msg = email.message_from_string(data[0][1])
+        main_tuple = email.utils.parsedate_tz(msg['Date'])        
+        days_list.append(main_tuple)                           
     
-    # here we can also return date range
     
-    return final_days_list_outbox
+    return days_list
 
 def word_count_daily_inbox():
 
