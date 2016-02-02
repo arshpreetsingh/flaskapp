@@ -113,7 +113,7 @@ def week_list_func():
         d=date.today() - timedelta(i)
         t = d.year, d.month, d.day
         date_list.append(t)
-    return reversed(date_list)
+    return list(reversed(date_list))
 
 
 @app.route('/')
@@ -195,6 +195,7 @@ def week_graph_data():
     # shorten the dates and tuple
     
     dates_inbox = tuple(a[:-7] for a in day_list_inbox)
+    
     dates_outbox = tuple(a[:-7] for a in day_list_outbox)
     
     week_list = week_list_func()
@@ -203,12 +204,12 @@ def week_graph_data():
     
     bar_chart.title = 'Weekly Email Analysis'
     
-    bar_chart.x_labels = (list(week_list_func()))
+    bar_chart.x_labels = (week_list_func())
     
-    bar_chart.add('Received', [sum(t==i for t in dates_inbox) for i in week_list])
+    bar_chart.add('Received', [sum(t==i for t in dates_outbox) for i in week_list])
     
-    bar_chart.add('Sent',[sum(t==i for t in dates_outbox) for i in week_list])
-
+    bar_chart.add('Sent', [sum(m==n for n in dates_inbox) for m in week_list])
+    
     week_chart = bar_chart.render(is_unicode = True)
     
     bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
