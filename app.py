@@ -553,7 +553,7 @@ def inbox_week():
                 msg = email.message_from_string(response_part[1])
                  
                 for header in ['to']:
-                    if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
+                    if (EMAIL in str(msg[header]) or 'danielr@eyecarepro.net' in str(msg[header])):
                         main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
                         yield main_tuple
 
