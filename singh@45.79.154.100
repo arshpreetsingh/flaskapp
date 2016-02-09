@@ -189,11 +189,14 @@ def graph_data():
 
 def week_graph_data():
 
+    day_list_inbox = inbox_week()    
+    day_list_outbox = outbox_week()
+    
     # shorten the dates and tuple
     
-    dates_inbox = tuple(a[:-7] for a in inbox_week())
+    dates_inbox = tuple(a[:-7] for a in day_list_inbox)
     
-    dates_outbox = tuple(a[:-7] for a in outbox_week())
+    dates_outbox = tuple(a[:-7] for a in day_list_outbox)
     
     week_list = week_list_func()
     
@@ -203,9 +206,9 @@ def week_graph_data():
     
     bar_chart.x_labels = (week_list_func())
     
-    bar_chart.add('Sent', [sum(t==i for t in dates_outbox) for i in week_list])
+    bar_chart.add('Received', [sum(t==i for t in dates_outbox) for i in week_list])
     
-    bar_chart.add('Received', [sum(m==n for n in dates_inbox) for m in week_list])
+    bar_chart.add('Sent', [sum(m==n for n in dates_inbox) for m in week_list])
     
     week_chart = bar_chart.render(is_unicode = True)
     
@@ -546,48 +549,59 @@ def inbox_week():
     
     
         result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
-        result, data = mail.uid('fetch', data[0].replace(' ',','), 
-                         '(BODY.PEEK[])')
-        for response_part in data:
-            if isinstance(response_part, tuple):
-                msg = email.message_from_string(response_part[1])
-                 
-                for header in ['to']:
-                    if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
-                        main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
-                        yield main_tuple
+    
+    
+        days_list = []
+    
+    
+        for num in data[0].split():
 
+            result, data = mail.uid('fetch',num,'(BODY.PEEK[])')
+    
+        
+            for response_part in data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_string(response_part[1])
+                 
+                    for header in ['to']:
+                        if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):
+                           
+                              msg = email.message_from_string(data[0][1])
+                              main_tuple = email.utils.parsedate_tz(msg['Date'])        
+                              days_list.append(main_tuple)                           
     except:
 		pass
-
+    return days_list
 
 
 
 def outbox_week():
-    try:        
+
+    try:
         auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
         d=6
         user = EMAIL
         mail = imaplib.IMAP4_SSL('imap.gmail.com')
         mail.debug = 4
         mail.authenticate('XOAUTH2', lambda x: auth_string)
-        mail.select('[Gmail]/Sent Mail')
-        interval = (date.today() - timedelta(weeks)).strftime("%d-%b-%Y")
-        result, data = mail.uid('search', None, 
-                      '(SENTSINCE {date})'.format(date=interval))
- # retrieving the headers
-        result, data = mail.uid('fetch', data[0].replace(' ',','), 
-                         '(BODY.PEEK[])')
-        for response_part in data:
-            if isinstance(response_part, tuple):
-   
-                msg = email.message_from_string(response_part[1])
-                main_tuple = email.utils.parsedate_tz(msg['Date'])
-                yield main_tuple
+        mail.select( '[Gmail]/Sent Mail')
+        interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
+        result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
+        days_list = []
+    
+        for num in data[0].split():
+		
+            result, data = mail.uid('fetch',num,'(BODY.PEEK[])')  
+            msg = email.message_from_string(data[0][1])
+            main_tuple = email.utils.parsedate_tz(msg['Date'])        
+            days_list.append(main_tuple)                           
+    
     except:
-		pass
+		pass    
+    return days_list
 
 def word_count_daily_inbox():
+
     auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
     d=1
     user = EMAIL
