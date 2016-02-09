@@ -193,7 +193,7 @@ def week_graph_data():
     
     dates_inbox = tuple(a[:-7] for a in inbox_week())
     
-    dates_outbox = tuple(a[:-7] for a in outbox_week())
+    dates_outbox = tuple(b[:-7] for b in outbox_week())
     
     week_list = week_list_func()
     
@@ -551,7 +551,6 @@ def inbox_week():
         for response_part in data:
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
-                 
                 for header in ['to']:
                     if (EMAIL in str(msg[header]) or 'danielr@eyecarepro.net' in str(msg[header])):
                         main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
@@ -564,6 +563,7 @@ def inbox_week():
 
 
 def outbox_week():
+    
     try:        
         auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
         d=6
@@ -580,7 +580,6 @@ def outbox_week():
                          '(BODY.PEEK[])')
         for response_part in data:
             if isinstance(response_part, tuple):
-   
                 msg = email.message_from_string(response_part[1])
                 main_tuple = email.utils.parsedate_tz(msg['Date'])
                 yield main_tuple
