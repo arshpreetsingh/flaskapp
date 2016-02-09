@@ -572,7 +572,7 @@ def outbox_week():
         mail.debug = 4
         mail.authenticate('XOAUTH2', lambda x: auth_string)
         mail.select('[Gmail]/Sent Mail')
-        interval = (date.today() - timedelta(weeks)).strftime("%d-%b-%Y")
+        interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
         result, data = mail.uid('search', None, 
                       '(SENTSINCE {date})'.format(date=interval))
  # retrieving the headers
