@@ -191,27 +191,29 @@ def week_graph_data():
 
     # shorten the dates and tuple
     
+    try:
+        dates_outbox = tuple(b[:-7] for b in outbox_week())
+        dates_inbox = tuple(a[:-7] for a in inbox_week())
     
-    dates_outbox = tuple(b[:-7] for b in outbox_week())
-    dates_inbox = tuple(a[:-7] for a in inbox_week())
+        week_list = week_list_func()
     
-    week_list = week_list_func()
+        bar_chart = pygal.Bar()
     
-    bar_chart = pygal.Bar()
+        bar_chart.title = 'Weekly Email Analysis'
     
-    bar_chart.title = 'Weekly Email Analysis'
+        bar_chart.x_labels = (week_list_func())
     
-    bar_chart.x_labels = (week_list_func())
+        bar_chart.add('Sent', [sum(t==i for t in dates_outbox) for i in week_list])
     
-    bar_chart.add('Sent', [sum(t==i for t in dates_outbox) for i in week_list])
+        bar_chart.add('Received', [sum(m==n for n in dates_inbox) for m in week_list])
     
-    bar_chart.add('Received', [sum(m==n for n in dates_inbox) for m in week_list])
+        week_chart = bar_chart.render(is_unicode = True)
     
-    week_chart = bar_chart.render(is_unicode = True)
-    
-    bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
+        bar_chart.render_to_file(os.path.join(app.config['weekly'],'weekly_'+EMAIL+'_.svg'))
 
-    return render_template('weekly.html',week_chart = week_chart)
+        return render_template('weekly.html',week_chart = week_chart)
+    except:
+		pass
 
 @app.route('/weekly-pieAnalysis')
 
