@@ -533,53 +533,56 @@ def outbox_data():
 
 def inbox_week():
     "Weekly analysis inbox"
-    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
-    d=6
-    user = EMAIL
-    mail = imaplib.IMAP4_SSL('imap.gmail.com')
-    mail.debug = 4
-    mail.authenticate('XOAUTH2', lambda x: auth_string)
-    mail.select("[Gmail]/All Mail")
+    try:
+        auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+        d=6
+        user = EMAIL
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.debug = 4
+        mail.authenticate('XOAUTH2', lambda x: auth_string)
+        mail.select("[Gmail]/All Mail")
     
     # if I will select [Gmail]/All-mail then how to find Inbox messages in imaplib
     
-    interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
+        interval = (date.today()-timedelta(d)).strftime("%d-%b-%Y")
     
     
-    result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
-    result, data = mail.uid('fetch', data[0].replace(' ',','), '(BODY.PEEK[])')
+        result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
+        result, data = mail.uid('fetch', data[0].replace(' ',','), '(BODY.PEEK[])')
     
-    for response_part in data:
-        if isinstance(response_part, tuple):
-            msg = email.message_from_string(response_part[1])
-            for header in ['to']:
-                if (EMAIL in str(msg[header]) or 'danielr@eyecarepro.net' in str(msg[header])):
-                    main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
-                    yield main_tuple
-
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                msg = email.message_from_string(response_part[1])
+                for header in ['to']:
+                    if (EMAIL in str(msg[header]) or 'danielr@eyecarepro.net' in str(msg[header])):
+                        main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
+                        yield main_tuple
+    except:
+		pass
 def outbox_week():
+    try:
+        auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
+        d=6
+        user = EMAIL
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.debug = 4
+        mail.authenticate('XOAUTH2', lambda x: auth_string)
     
-    auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
-    d=6
-    user = EMAIL
-    mail = imaplib.IMAP4_SSL('imap.gmail.com')
-    mail.debug = 4
-    mail.authenticate('XOAUTH2', lambda x: auth_string)
-    
-    mail.select('[Gmail]/Sent Mail')
+        mail.select('[Gmail]/Sent Mail')
 
 
-    interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
-    result, data = mail.uid('search', None, '(SENTSINCE {date})'.format(date=interval))
+        interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
+        result, data = mail.uid('search', None, '(SENTSINCE {date})'.format(date=interval))
  # retrieving the headers
-    result, data = mail.uid('fetch', data[0].replace(' ',','),'(BODY.PEEK[])')
-    for response_part in data:
-        if isinstance(response_part, tuple):
+        result, data = mail.uid('fetch', data[0].replace(' ',','),'(BODY.PEEK[])')
+        for response_part in data:
+            if isinstance(response_part, tuple):
    
-            msg = email.message_from_string(response_part[1])
-            main_tuple = email.utils.parsedate_tz(msg['Date'])
-            yield main_tuple
-
+                msg = email.message_from_string(response_part[1])
+                main_tuple = email.utils.parsedate_tz(msg['Date'])
+                yield main_tuple
+    except:
+		pass 
 
  
 def word_count_daily_inbox():
