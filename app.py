@@ -193,7 +193,7 @@ def week_graph_data():
     
     try:
         dates_outbox = tuple(b[:-7] for b in outbox_week())
-       # dates_inbox = tuple(a[:-7] for a in inbox_week())
+        dates_inbox = tuple(a[:-7] for a in inbox_week())
     
         week_list = week_list_func()
     
@@ -205,7 +205,7 @@ def week_graph_data():
     
         bar_chart.add('Sent', [sum(t==i for t in dates_outbox) for i in week_list])
     
-        #bar_chart.add('Received', [sum(m==n for n in dates_inbox) for m in week_list])
+        bar_chart.add('Received', [sum(m==n for n in dates_inbox) for m in week_list])
     
         week_chart = bar_chart.render(is_unicode = True)
     
@@ -394,7 +394,7 @@ def inbox_data():
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(response_part[1])
                 for header in ['to']:
-                    if (EMAIL in str(msg[header]) or '@eyecarepro.net' in str(msg[header])):                 
+                    if (EMAIL in str(msg[header])):                 
                         
                         result, data = mail.uid('fetch',num,'(BODY.PEEK[])') 
                         msg = email.message_from_string(data[0][1]) 
