@@ -398,11 +398,12 @@ def inbox_data():
                         
                         result, data = mail.uid('fetch',num,'(BODY.PEEK[])') 
                         msg = email.message_from_string(data[0][1]) 
+
                         try:
 							
                             main_tuple = email.utils.parsedate_tz(msg['Date'])        
                         
-                        # we can use this message msg['Date'] and put it in Graph or date Tuple.
+                        # we need to convert main tuple into time tuple
                         
                             Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
                             Time_Tuple = main_tuple[3],main_tuple[4],main_tuple[5]    
@@ -548,6 +549,8 @@ def inbox_week():
     
     
         result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
+        
+        
         result, data = mail.uid('fetch', data[0].replace(' ',','), '(BODY.PEEK[])')
     
         for response_part in data:
@@ -559,6 +562,7 @@ def inbox_week():
                         yield main_tuple
     except:
 		pass
+
 def outbox_week():
     try:
         auth_string = 'user=%s\1auth=Bearer %s\1\1' % (EMAIL,ACCESS_TOKEN)
