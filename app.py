@@ -402,7 +402,6 @@ def inbox_data():
                         try:
 							
                             main_tuple = email.utils.parsedate_tz(msg['Date'])        
-                        
                         # we need to convert main tuple into time tuple
                         
                             Date_Tuple = main_tuple[0],main_tuple[1],main_tuple[2]
@@ -550,16 +549,16 @@ def inbox_week():
     
         result, data = mail.uid('search', None,'(SENTSINCE {date})'.format(date=interval))
         
-        
-        result, data = mail.uid('fetch', data[0].replace(' ',','), '(BODY.PEEK[])')
+        for num in data[0].split():
+            result, data = mail.uid('fetch', num, '(BODY.PEEK[])')
     
-        for response_part in data:
-            if isinstance(response_part, tuple):
-                msg = email.message_from_string(response_part[1])
-                for header in ['to']:
-                    if (EMAIL in str(msg[header]) or 'danielr@eyecarepro.net' in str(msg[header])):
-                        main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
-                        yield main_tuple
+            for response_part in data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_string(response_part[1])
+                    for header in ['to']:
+                        if (EMAIL in str(msg[header]) or 'danielr@eyecarepro.net' in str(msg[header])):
+                            main_tuple = email.utils.parsedate_tz(msg['Date'])                                   
+                            yield main_tuple
     except:
 		pass
 
@@ -578,13 +577,16 @@ def outbox_week():
         interval = (date.today() - timedelta(d)).strftime("%d-%b-%Y")
         result, data = mail.uid('search', None, '(SENTSINCE {date})'.format(date=interval))
  # retrieving the headers
-        result, data = mail.uid('fetch', data[0].replace(' ',','),'(BODY.PEEK[])')
-        for response_part in data:
-            if isinstance(response_part, tuple):
+        for num in data[0].split():
+			
+            result, data = mail.uid('fetch', num,'(BODY.PEEK[])')
+        
+            for response_part in data:
+                if isinstance(response_part, tuple):
    
-                msg = email.message_from_string(response_part[1])
-                main_tuple = email.utils.parsedate_tz(msg['Date'])
-                yield main_tuple
+                    msg = email.message_from_string(response_part[1])
+                    main_tuple = email.utils.parsedate_tz(msg['Date'])
+                    yield main_tuple
     except:
 		pass 
 
